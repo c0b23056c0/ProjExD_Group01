@@ -51,7 +51,7 @@ class Kokaton(pg.sprite.Sprite):
         self.rect_kao.center = (505, 810)
     
     def update(self, screen: pg.Surface):
-        #self.rect.move_ip(self.vx, self.vy)
+        self.rect.move_ip(self.vx, self.vy)
         screen.blit(self.image, self.rect)
         if self.rect.centerx == 500:
             self.vx = 0
