@@ -160,7 +160,7 @@ def main():
     clock = pg.time.Clock()
 
     #ステージによって変えれる
-    mgms.add(Obj(0, (100, 270)))
+    mgms.add(Obj(0, (425, 270)))
     wtrs.add(Obj(2, (425, 820)))
     trs.add(Obj(1, (425, 145)))
 
