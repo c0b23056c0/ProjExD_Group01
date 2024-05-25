@@ -46,4 +46,7 @@
 * スタート画面はwhile文の前にwhile文を作ることで簡単にできる(musou_kokaton.pyに手本を作っておいた)
 * 黒曜石はSurface.Groupにする
 * ステージはTate_StageとYoko_stageにわける
+* .addするときにfor文を使う -> ほかの方法では使えなかったstageとの衝突判定が行える
 * Objのupdateに衝突判定を入れてあげて，while文の最後の奴にはYoko_stageを入れて，宝が黒曜石とぶつかったときはstoneを入れてあげればいい
+* スペースを押したらこうかとんが宝に近づく
+* こうかとんもGroupとかにするかも

@@ -22,44 +22,43 @@ def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
-class Stage(pg.sprite.Sprite):
+class Yoko_Stage(pg.sprite.Sprite):
     """
     ステージの描写に関するクラス
     """
-    def __init__(self) -> None:
+    def __init__(self, xy: tuple[int, int]) -> None:
         """
         ステージSurfaceを生成する
         """
         super().__init__()
-        self.image_yoko = pg.Surface((100, 25)) # 横長の枠組みのSurface
-        self.image_tate = pg.Surface((25, 100)) # 縦長の枠組みのSurface
-        pg.draw.rect(self.image_yoko, (180,82,45), [0, 0, 100, 25])
-        pg.draw.rect(self.image_tate, (180,82,45), [0, 0, 25, 100])
-        pg.draw.rect(self.image_yoko, (255, 255, 255), [0, 0, 100, 25], 2) # 横向きの四角形の枠組みの描写
-        pg.draw.rect(self.image_tate, (255, 255, 255), [0, 0, 25, 100], 2) # 縦向きの四角形の枠組みの描写
-        self.rect_yoko = self.image_yoko.get_rect()
-        self.rect_tate = self.image_tate.get_rect()
+        self.image = pg.Surface((100, 25)) # 横長の枠組みのSurface
+        pg.draw.rect(self.image, (180,82,45), [0, 0, 100, 25])
+        pg.draw.rect(self.image, (255, 255, 255), [0, 0, 100, 25], 2) # 横向きの四角形の枠組みの描写
+        self.rect = self.image.get_rect()
+        self.rect.topleft = xy
+        
+    def update(self):
+        pass
 
-    def setup(self,screen: pg.Surface):
-        """
-        for文を二つ使ってステージの描写をする
-        引数 screen：画面Surface
-        """
-        #ステージの横壁用のblit
-        for x in range(7):
-            screen.blit(self.image_yoko, [(100 * x -50), 25])
-            screen.blit(self.image_yoko, [(100 * x), 0])
-            screen.blit(self.image_yoko, [(100 * (x - 4)), 800])
-            screen.blit(self.image_yoko, [(100 * (x - 4)), 825])
-            screen.blit(self.image_yoko, [(100 * x), 875])
-            screen.blit(self.image_yoko, [(100 * x -50), 850])
-        # ステージの縦壁用のblit
-        for y in range(10):
-            screen.blit(self.image_tate, [0, (100 * y -50)])
-            screen.blit(self.image_tate, [25, (100 * y)])
-            screen.blit(self.image_tate, [550, (100 * y)])
-            screen.blit(self.image_tate, [575, (100 * y -50)])
 
+class Tate_Stage(pg.sprite.Sprite):
+    """
+    ステージの描写に関するクラス
+    """
+    def __init__(self, xy: tuple[int, int]) -> None:
+        """
+        ステージSurfaceを生成する
+        """
+        super().__init__()
+        self.image = pg.Surface((25, 100)) # 縦長の枠組みのSurface
+        pg.draw.rect(self.image, (180,82,45), [0, 0, 25, 100])
+        pg.draw.rect(self.image, (255, 255, 255), [0, 0, 25, 100], 2) # 縦向きの四角形の枠組みの描写
+        self.rect = self.image.get_rect()
+        self.rect.topleft = xy
+    
+    def update(self):
+        pass
+        
 
 class Kao():
     """
@@ -218,8 +217,9 @@ def main():
     bg_img = pg.image.load(f"fig/sabaku.jpg")
 
     kokaton = Kokaton()
-    stage = Stage()
     kao = Kao()
+    ysts = pg.sprite.Group()
+    tsts = pg.sprite.Group() 
     mgms = pg.sprite.Group()
     wtrs = pg.sprite.Group()
     trs = pg.sprite.Group()
@@ -227,6 +227,21 @@ def main():
     pins = pg.sprite.Group()
 
     clock = pg.time.Clock()
+
+    # ステージの座標をfor文で指定する
+    for x in range(7):
+        ysts.add(Yoko_Stage((100 * x, 0)))
+        ysts.add(Yoko_Stage((100 * x -50, 25)))
+        ysts.add(Yoko_Stage((100 * x, 875)))
+        ysts.add(Yoko_Stage((100 * x -50, 850)))
+        if x < 3:
+            ysts.add(Yoko_Stage((100 * x, 800)))
+            ysts.add(Yoko_Stage((100 * x, 825)))
+    for y in range(10):
+        tsts.add(Tate_Stage((0, 100 * y)))
+        tsts.add(Tate_Stage((25, 100 * y -50)))
+        tsts.add(Tate_Stage((575, 100 * y)))
+        tsts.add(Tate_Stage((550, 100 * y -50)))
 
     #ステージによって変えれる
     mgms.add(Obj(0, (425, 260)))
@@ -242,10 +257,11 @@ def main():
 
     while True:
         for event in pg.event.get():
-            if event.type == pg.QUIT: return
+            if event.type == pg.QUIT:
+                return None
         
         screen.blit(bg_img, [0, 0])
-        stage.setup(screen)
+
         for mgm in mgms:
             mgm.vy = +2
         for wtr in wtrs:
@@ -274,19 +290,23 @@ def main():
             kokaton.update(screen)
             kao.update(kokaton, screen)
             sixtones.draw(screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
             game_stats = "gameover"
             pg.display.update()
             time.sleep(2)
-            break
+            return game_stats
         
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
             kokaton.update(screen)
             kao.update(kokaton, screen)
             sixtones.draw(screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
             game_stats = "clear"
             pg.display.update()
             time.sleep(2)
-            break
+            return game_stats
 
         for tre in pg.sprite.groupcollide(trs, sixtones, False, False).keys():
             tre.vy = 0
@@ -303,18 +323,15 @@ def main():
         trs.draw(screen)
         sixtones.update()
         sixtones.draw(screen)
+        ysts.draw(screen)
+        tsts.draw(screen)
         pg.display.update()
         clock.tick(60)
 
 
-    if game_stats == "clear":
-        print("clear")
-    elif game_stats == "gameover":
-        print("gameover")
-
-
 if __name__ == "__main__":
     pg.init()
-    main()
+    game_stats = main()
+    print(game_stats)
     pg.quit()
     sys.exit()
