@@ -256,9 +256,6 @@ def main():
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 kokaton.vx = +2
         
-        for wtr in pg.sprite.groupcollide(pins, wtrs, False, False).keys():
-
-        
         for wtr in pg.sprite.groupcollide(wtrs, mgms, True, True).keys():
             sixtones.add(Stone(wtr))
         
