@@ -44,3 +44,6 @@
 * ステージの描写において理想のステージを描写するためにfor文を使うと40回ほど繰り返さなければならなくなるためscreen.blitを自力で書くようにしてある
 * ゲームオーバー画面やクリア画面の描写はなにかとこうかとんがぶつかってwhile文からbreakされてその下にgameover.updateみたいなやつを付ければいい(musou_kokaton.pyに手本としてResultクラスを作ってみたからそれを見るとわかりやすい)
 * スタート画面はwhile文の前にwhile文を作ることで簡単にできる(musou_kokaton.pyに手本を作っておいた)
+* 黒曜石はSurface.Groupにする
+* ステージはTate_StageとYoko_stageにわける
+* Objのupdateに衝突判定を入れてあげて，while文の最後の奴にはYoko_stageを入れて，宝が黒曜石とぶつかったときはstoneを入れてあげればいい

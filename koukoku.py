@@ -4,9 +4,7 @@ import sys
 import time
 import pygame as pg
 
-pg.init()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
 WIDTH, HEIGHT = 600, 900
 
 
@@ -185,12 +183,9 @@ class Obj(pg.sprite.Sprite):
         self.image.set_colorkey((0, 0, 0))
         self.rect = self.image.get_rect()
         self.rect.center = xy
-        self.vx, self.vy = 0, +2
+        self.vx, self.vy = 0, 0
     
     def update(self):
-        if self.color == __class__.colors[1]:
-            if self.rect.bottom > 800:
-                self.vy = 0
         if self.rect.bottom > 850:
             self.vy = 0
         if self.rect.right > 550 or self.rect.left < 50:
@@ -251,10 +246,23 @@ def main():
         
         screen.blit(bg_img, [0, 0])
         stage.setup(screen)
+        for mgm in mgms:
+            mgm.vy = +2
+        for wtr in wtrs:
+            wtr.vy = +2
+        for tre in trs:
+            tre.vy = +2
 
         for event in pg.event.get():
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 kokaton.vx = +2
+        
+        for mgm in pg.sprite.groupcollide(mgms, pins, False, False).keys():
+            mgm.vy = 0
+        for wtr in pg.sprite.groupcollide(wtrs, pins, False, False).keys():
+            wtr.vy = 0
+        for tre in pg.sprite.groupcollide(trs, pins, False, False).keys():
+            tre.vy = 0
         
         for wtr in pg.sprite.groupcollide(wtrs, mgms, True, True).keys():
             sixtones.add(Stone(wtr))
@@ -280,13 +288,13 @@ def main():
             time.sleep(2)
             break
 
-        for stone in pg.sprite.groupcollide(sixtones, trs, False, False).keys():
-            trs.update()
+        for tre in pg.sprite.groupcollide(trs, sixtones, False, False).keys():
+            tre.vy = 0
     
 
         kokaton.update(screen)
         pins.update()
-        pins.draw(screen) 
+        pins.draw(screen)
         mgms.update()
         mgms.draw(screen)
         wtrs.update()
