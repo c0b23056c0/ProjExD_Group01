@@ -13,24 +13,24 @@ class Clear():
     def __init__(self, screen):
         font = pg.font.Font(None, 80)
         self.img = pg.image.load("fig/宇宙.png")
-        self.txt = font.render("CLEAR!", True, (255, 255, 0))        
+        self.txt = font.render("CLEAR", True, (255, 255, 0))        
         screen.fill((0, 255, 0))
+        self.img1 = pg.image.load("fig/2.png")
+        self.img2 = pg.image.load("fig/5.png")
+        self.img3 = pg.image.load("fig/2.png")
+        self.img4 = pg.image.load("fig/5.png")
+        self.img5 = pg.image.load("fig/ペンギン.png")
+        self.img6 = pg.image.load("fig/アボカド.png")
+
+    def update(self, screen):
         screen.blit(self.img, [0, 0])
         screen.blit(self.txt, [200, 400])
-        img1 = pg.image.load("fig/2.png")
-        img2 = pg.image.load("fig/5.png")
-        img3 = pg.image.load("fig/2.png")
-        img4 = pg.image.load("fig/5.png")
-        img5 = pg.image.load("fig/ペンギン.png")
-        img6 = pg.image.load("fig/アボカド.png")
-        screen.blit(img1,[100, 150])
-        screen.blit(img2,[450, 150])
-        screen.blit(img3,[100, 750])
-        screen.blit(img4,[450, 750])
-        screen.blit(img5,[450, 400])
-        screen.blit(img6,[75, 400])
-        pg.display.update()
-        time.sleep(1)
+        screen.blit(self.img1,[100, 150])
+        screen.blit(self.img2,[450, 150])
+        screen.blit(self.img3,[100, 750])
+        screen.blit(self.img4,[450, 750])
+        screen.blit(self.img5,[450, 400])
+        screen.blit(self.img6,[75, 400])
 
 
 
@@ -47,6 +47,7 @@ def main():
 
     
     tmr = 0
+    gamemode = 0
     # def __init__(self, font):
     #     self.font = pg.font.Font(None, 80)
     #     txt = font.render("Game Clear", True, (255, 255, 0))
@@ -59,11 +60,14 @@ def main():
         
         txt = font.render(str(tmr), True, (255, 255, 255))
         if tmr == 5:
-            Clear(screen)
-            return
-        screen.fill((50, 50, 50))
-        screen.blit(txt, [300, 200])
-        screen.blit(enn, [100, 400])
+            clear = Clear(screen)
+            gamemode = 1
+        if gamemode == 0:
+            screen.fill((50, 50, 50))
+            screen.blit(txt, [300, 200])
+            screen.blit(enn, [100, 400])
+        elif gamemode == 1:
+            clear.update(screen)
         pg.display.update()
         tmr += 1        
         clock.tick(1)
