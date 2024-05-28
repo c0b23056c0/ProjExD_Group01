@@ -13,7 +13,7 @@ def main():  #main関数
     #screen1 = pg.display.set_mode((WIDTH,HEIGHT))
     image = pg.image.load("fig/sougen.jpg") #草原画像
     #image = pg.transform.flip(image,True,False)
-    screen.blit(image,[150,400])
+    screen.blit(image,[0,0])
     pg.display.update()
     clock = pg.time.Clock()
     font = pg.font.Font(None, 80)
