@@ -5,9 +5,7 @@ import time
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-
-WIDTH, HEIGHT = 600,900
-
+WIDTH, HEIGHT = 600,900 #サイズ
 
 def main():  #main関数
     pg.display.set_caption("はじめてのPygame")
@@ -24,15 +22,12 @@ def main():  #main関数
     pg.draw.circle(enn, (255, 0, 0), (10, 10), 10)
     enn.set_colorkey((0, 0, 0))
     
-    
     fonto = pg.font.Font(None,80)
     txt = fonto.render("Game Over",True,(255,0,0))   #GameOver表記
     screen.blit(txt,[WIDTH/2-150, HEIGHT/2])
     pg.display.update()
     time.sleep(5)
     
-    
-
     tmr = 0
     
     while True:
@@ -43,7 +38,6 @@ def main():  #main関数
         screen.fill((50, 50, 50))
         screen.blit(txt, [300, 200])
         screen.blit(enn, [100, 400])
-              
         
         pg.display.update()
         tmr += 1        
