@@ -19,6 +19,7 @@ def main():
     tmr = 0
     fonto = pg.font.Font(None, 120)
     txt = fonto.render("Start", True, (255,0,0)) #start文字
+    image3 = pg.image.load("fig/mura1.png")
     image1 = pg.image.load("fig/2.png") #こうかとん
     image2 = pg.image.load("fig/9.png") #こうかとん
     while True:
@@ -28,6 +29,7 @@ def main():
             if event.type == pg.KEYDOWN and pg.K_KP_ENTER:
                 gamemood = 1
         if gamemood == 0: #start画面
+            screen.blit(image3,[0,0])
             screen.blit(txt,[600/2 - 120, 900/2 - 70])
             screen.blit(image1,[100, 380])
             screen.blit(image2,[400, 380])
