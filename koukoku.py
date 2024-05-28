@@ -6,17 +6,29 @@ import time
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 WIDTH = 600
-HEIGTH = 800
+HEIGTH = 900
 
 #クリアコード
 class Clear():
     def __init__(self, screen):
         font = pg.font.Font(None, 80)
-        self.img = pg.image.load("fig/sora.jpg")
-        self.txt = font.render("CLEAR", True, (255, 255, 0))
+        self.img = pg.image.load("fig/宇宙.png")
+        self.txt = font.render("CLEAR!", True, (255, 255, 0))        
         screen.fill((0, 255, 0))
         screen.blit(self.img, [0, 0])
-        screen.blit(self.txt, [200, 150])
+        screen.blit(self.txt, [200, 400])
+        img1 = pg.image.load("fig/2.png")
+        img2 = pg.image.load("fig/5.png")
+        img3 = pg.image.load("fig/2.png")
+        img4 = pg.image.load("fig/5.png")
+        img5 = pg.image.load("fig/ペンギン.png")
+        img6 = pg.image.load("fig/アボカド.png")
+        screen.blit(img1,[100, 150])
+        screen.blit(img2,[450, 150])
+        screen.blit(img3,[100, 750])
+        screen.blit(img4,[450, 750])
+        screen.blit(img5,[450, 400])
+        screen.blit(img6,[75, 400])
         pg.display.update()
         time.sleep(1)
 
@@ -25,7 +37,7 @@ class Clear():
 
 def main():
     pg.display.set_caption("広告ゲーム")
-    screen = pg.display.set_mode((600, 800))
+    screen = pg.display.set_mode((600, 900))
     clock = pg.time.Clock()
     font = pg.font.Font(None, 80)
 
@@ -33,6 +45,7 @@ def main():
     pg.draw.circle(enn, (255, 0, 0), (10, 10), 10)
     enn.set_colorkey((0, 0, 0))
 
+    
     tmr = 0
     # def __init__(self, font):
     #     self.font = pg.font.Font(None, 80)
