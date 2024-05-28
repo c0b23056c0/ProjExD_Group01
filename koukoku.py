@@ -11,30 +11,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 WIDTH, HEIGHT = 600, 900
 STAGE_NUM = 0
 
-#クリアコード
-# class Clear():
-#     def __init__(self, screen):
-#         font = pg.font.Font(None, 80)
-#         self.img = pg.image.load("fig/宇宙.png")
-#         self.txt = font.render("CLEAR", True, (255, 255, 0))        
-#         screen.fill((0, 255, 0))
-#         self.img1 = pg.image.load("fig/2.png")
-#         self.img2 = pg.image.load("fig/5.png")
-#         self.img3 = pg.image.load("fig/2.png")
-#         self.img4 = pg.image.load("fig/5.png")
-#         self.img5 = pg.image.load("fig/ペンギン.png")
-#         self.img6 = pg.image.load("fig/アボカド.png")
-
-#     def update(self, screen):
-#         screen.blit(self.img, [0, 0])
-#         screen.blit(self.txt, [200, 400])
-#         screen.blit(self.img1,[100, 150])
-#         screen.blit(self.img2,[450, 150])
-#         screen.blit(self.img3,[100, 750])
-#         screen.blit(self.img4,[450, 750])
-#         screen.blit(self.img5,[450, 400])
-#         screen.blit(self.img6,[75, 400])
-
 
 def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
     """
@@ -674,8 +650,6 @@ def main2(stage_num):
             # 一ステージとばすチート
             if event.type == pg.KEYDOWN and event.key == pg.K_g:
                 return "clear"
-            if event.type == pg.KEYDOWN and event.key == pg.K_r:
-                return "continue"
         
         if pg.mouse.get_pressed()[0]: # マウスの処理
             mouse_x, mouse_y = pg.mouse.get_pos()
@@ -686,6 +660,8 @@ def main2(stage_num):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return "retire"
+            if event.type == pg.KEYDOWN and event.key == pg.K_r:
+                return "continue"
         
         screen.blit(bg_img, [0, 0])
 
@@ -817,6 +793,7 @@ def main2(stage_num):
                     return "continue"
                 elif (go.ret_rect.topleft[0] <= mouse_x <= go.ret_rect.bottomright[0]) and (go.ret_rect.topleft[1] <= mouse_y <= go.ret_rect.bottomright[1]):
                     return "retire"
+        
         elif game_stats == "clear":
             cl.update(screen)
             pg.display.update()
