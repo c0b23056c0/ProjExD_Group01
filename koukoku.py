@@ -13,7 +13,7 @@ def main():  #main関数
     pg.display.set_caption("はじめてのPygame")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     #screen1 = pg.display.set_mode((WIDTH,HEIGHT))
-    image = pg.image.load("fig/sougen.jpg")
+    image = pg.image.load("fig/sougen.jpg") #草原画像
     #image = pg.transform.flip(image,True,False)
     screen.blit(image,[150,400])
     pg.display.update()
