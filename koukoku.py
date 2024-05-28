@@ -7,7 +7,7 @@ import pygame as pg
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 WIDTH, HEIGHT = 600, 900
-STAGE_NUM = 1
+STAGE_NUM = 0
 
 
 def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
@@ -17,9 +17,9 @@ def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
     戻り値：横方向判定結果，縦方向判定結果（True：画面内／False：画面外）
     """
     yoko, tate = True, True
-    if obj_rct.left < 0 or WIDTH < obj_rct.right:  # 横方向のはみ出し判定
+    if obj_rct.right < 0 or WIDTH < obj_rct.left:  # 横方向のはみ出し判定
         yoko = False
-    if obj_rct.top < 0 or HEIGHT < obj_rct.bottom:  # 縦方向のはみ出し判定
+    if obj_rct.bottom < 0 or HEIGHT < obj_rct.top:  # 縦方向のはみ出し判定
         tate = False
     return yoko, tate
 
@@ -33,7 +33,7 @@ def calc_orientation(org: pg.Rect, dst: pg.Rect) -> tuple[float, float]:
     """
     x_diff, y_diff = dst.centerx-org.centerx, dst.centery-org.centery
     norm = math.sqrt(x_diff**2+y_diff**2)
-    return x_diff/norm, y_diff/norm
+    return x_diff/norm
 
 
 class Yoko_Stage(pg.sprite.Sprite):
@@ -108,17 +108,15 @@ class Kokaton(pg.sprite.Sprite):
         self.image = pg.transform.flip(pg.image.load(f"fig/0.png"), True, False) # こうかとんの画像を読み込む
         self.rect = self.image.get_rect()
         self.rect.centerx = x
-        self.rect.bottom = y
+        self.rect.bottom = y - 1 # こうかとんがステージに埋まらないようにしてる
         self.vx, self.vy = 0, 0
         self.speed = 5
     
     def update(self, screen: pg.Surface):
         """
-        スペースを押したらこうかとんを移動させる
+        こうかとんをクリックしたらこうかとんを動かす
         引数 screen：画面Surface
         """
-        if self.vy < 0:
-            self.vy = 0
         self.rect.move_ip(self.speed * self.vx, self.speed * self.vy)
         screen.blit(self.image, self.rect)
 
@@ -128,7 +126,7 @@ class Yoko_Pin(pg.sprite.Sprite): # 横用のピンのクラス
     横長用のピンのクラス
     リストにあらかじめ図形左上の座標タプルを入れておくことで呼び出しを簡単にしている
     """
-    yoko_topleft_xy = [(50, 165), (50, 290), (300, 165), (300, 290)] # ピンの座標タプルのリスト
+    yoko_topleft_xy = [(50, 165), (50, 300), (50, 575), (300, 250), (300, 450), (300, 775)] # ピンの座標タプルのリスト
 
     def __init__(self, ytl):
         """
@@ -158,6 +156,8 @@ class Yoko_Pin(pg.sprite.Sprite): # 横用のピンのクラス
             elif self.rect.centerx < (WIDTH / 2): # ピンが画面の左側にあったら
                 if (self.rect.left <= mouse_x <= self.rect.centerx and self.rect.top <= mouse_y <= self.rect.bottom): # マウスがピンの半分より左側にあったら
                     self.vx = -2
+        
+        
         
         self.rect.move_ip(self.vx, self.vy)
         if check_bound(self.rect) != (True, True):
@@ -216,7 +216,7 @@ class Obj(pg.sprite.Sprite):
         引数３：物体の位置タプル
         """
         super().__init__()
-        rad = 30
+        rad = 10
         self.image = pg.Surface((2*rad, 2*rad))
         self.color = __class__.colors[num]
         pg.draw.circle(self.image, self.color, (rad, rad), rad)
@@ -224,9 +224,10 @@ class Obj(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = xy
         self.vx, self.vy = 0, 0
+        self.speed = 3
     
     def update(self):
-        self.rect.move_ip(self.vx, self.vy)
+        self.rect.move_ip(self.vx * self.speed, self.vy * self.speed)
 
 
 class Stone(pg.sprite.Sprite):
@@ -239,8 +240,8 @@ class Stone(pg.sprite.Sprite):
         引数1：マグマなどのインスタンス
         """
         super().__init__()
-        self.image = pg.Surface((250, 50))
-        pg.draw.rect(self.image, (0, 0, 0), [0, 0, 250, 50])
+        self.image = pg.Surface((20, 20))
+        pg.draw.rect(self.image, (0, 0, 0), [0, 0, 20, 20])
         self.rect = self.image.get_rect()
         self.rect.center = obj.rect.center
     
@@ -248,10 +249,80 @@ class Stone(pg.sprite.Sprite):
         pass
 
 
-def main():
+class Start:
+    def __init__(self, stage_num):
+        self.image = pg.Surface((100, 100))
+        pg.draw.rect(self.image, (255, 255, 255), [0, 0, 100, 100], 2)
+        self.rect = self.image.get_rect()
+        self.rect.center = WIDTH / 2, HEIGHT / 2
+        self.font = pg.font.Font(None, 100)
+        self.font_image = self.font.render(f"{stage_num + 1}", 0, (255, 255, 255))
+        self.font_rect = self.font_image.get_rect()
+        self.font_rect.center = self.rect.center
+        self.state = True
+    
+    def update(self, screen: pg.Surface):
+        screen.blit(self.image, self.rect)
+        screen.blit(self.font_image, self.font_rect)
+
+
+class Gameover:
+    def __init__(self):
+        #ゲームオーバーの文字列
+        self.go = pg.font.Font(None, 100)
+        self.go_image = self.go.render(f"GAME OVER", 0, (255, 0, 0), (255, 255, 255))
+        self.go_rect = self.go_image.get_rect()
+        self.go_rect.center = 300, 200
+        #コンチヌー
+        self.con = pg.font.Font(None, 50)
+        self.con_image = self.con.render(f"CONTINUE ???", 1, (255, 255, 255), (255, 0, 0))
+        self.con_rect = self.con_image.get_rect()
+        self.con_rect.center = 300, 500
+        #リタイア
+        self.ret = pg.font.Font(None, 50)
+        self.ret_image = self.ret.render(f"RETIRE ???", 1, (255, 255, 255), (0, 0, 255))
+        self.ret_rect = self.ret_image.get_rect()
+        self.ret_rect.center = 300, 650
+    
+    def update(self, screen: pg.Surface):
+        screen.blit(self.go_image, self.go_rect)
+        screen.blit(self.con_image, self.con_rect)
+        screen.blit(self.ret_image, self.ret_rect)
+
+
+class Clear:
+    def __init__(self):
+        #ゲームオーバーの文字列
+        self.cl = pg.font.Font(None, 100)
+        self.cl_image = self.cl.render(f"CLEAR", 0, (255, 0, 0), (255, 255, 255))
+        self.cl_rect = self.cl_image.get_rect()
+        self.cl_rect.center = 300, 200
+        #コンチヌー
+        self.next = pg.font.Font(None, 50)
+        self.next_image = self.next.render(f"NEXT STAGE", 1, (255, 255, 255), (255, 0, 0))
+        self.next_rect = self.next_image.get_rect()
+        self.next_rect.center = 300, 500
+        #リタイア
+        self.con = pg.font.Font(None, 50)
+        self.con_image = self.con.render(f"CONTINUE ???", 1, (255, 255, 255), (0, 0, 255))
+        self.con_rect = self.con_image.get_rect()
+        self.con_rect.center = 300, 650
+    
+    def update(self, screen: pg.Surface):
+        screen.blit(self.cl_image, self.cl_rect)
+        screen.blit(self.next_image, self.next_rect)
+        screen.blit(self.con_image, self.con_rect)
+
+
+def main(stage_num):
+    game_stats = None
     pg.display.set_caption("広告ゲーム")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
-    bg_img = pg.image.load(f"fig/sabaku.jpg")
+    bg_img = pg.image.load(f"fig/bg_img{stage_num}.jpg")
+
+    start = Start(stage_num)
+    go = Gameover()
+    cl = Clear()
 
     kao = Kao()
     ysts = pg.sprite.Group()
@@ -260,36 +331,64 @@ def main():
     wtrs = pg.sprite.Group()
     trs = pg.sprite.Group()
     sixtones = pg.sprite.Group()
-    pins = pg.sprite.Group()
+    ypins = pg.sprite.Group()
+    tpins = pg.sprite.Group()
 
     clock = pg.time.Clock()
 
-    #ここはステージ毎に数値を変更することができる
-    kokaton = Kokaton(100, 800)
-    # ステージの座標をfor文で指定する
+    # 基本ステージの描写(周りの壁)
     for x in range(7):
         ysts.add(Yoko_Stage((100 * x, 0)))
         ysts.add(Yoko_Stage((100 * x -50, 25)))
         ysts.add(Yoko_Stage((100 * x, 875)))
         ysts.add(Yoko_Stage((100 * x -50, 850)))
-        if x < 3:
-            ysts.add(Yoko_Stage((100 * x, 800)))
-            ysts.add(Yoko_Stage((100 * x, 825)))
     for y in range(10):
         tsts.add(Tate_Stage((0, 100 * y)))
         tsts.add(Tate_Stage((25, 100 * y -50)))
         tsts.add(Tate_Stage((575, 100 * y)))
         tsts.add(Tate_Stage((550, 100 * y -50)))
 
+    #ここはステージ毎に数値を変更することができる
+    kokaton = Kokaton(100, 775)
+    # 追加ステージの座標をfor文で指定する
+    ysts.add(Yoko_Stage((200, 800)))
+    for y in range(16):
+        for x in range(3):
+            if y % 2 == 0:
+                ysts.add(Yoko_Stage((100 * x , 50 + 25 * y)))
+            if y % 2 == 1:
+                ysts.add(Yoko_Stage((200, 50 + 25 * y)))
+                ysts.add(Yoko_Stage((100 * x -50, 50 + 25 * y)))
+            ysts.add(Yoko_Stage((100 * x, 775)))
+            ysts.add(Yoko_Stage((100 * x -50, 800)))
+            ysts.add(Yoko_Stage((100 * x, 825)))
+
     #ステージによって変えれる
-    mgms.add(Obj(0, (425, 260)))
-    wtrs.add(Obj(2, (425, 820)))
-    trs.add(Obj(1, (425, 135)))
+    for x in range(11):
+        mgms.add(Obj(0, (325 + 20 * x, 400)))
+        wtrs.add(Obj(2, (325  + 20 * x, 820)))
+        trs.add(Obj(1, (325  + 20 * x, 200)))
 
     # 使いたい棒の座標タプルが入ったリストを指定する
-    pins.add(Yoko_Pin(2))
-    pins.add(Yoko_Pin(3))
-    pins.add(Tate_Pin(0))
+    ypins.add(Yoko_Pin(3))
+    ypins.add(Yoko_Pin(4))
+    ypins.add(Yoko_Pin(5))
+    #tpins.add(Tate_Pin(0))
+
+    while True:
+        start.update(screen)
+        pg.display.update()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return "retire"
+            # 一ステージとばすチート
+            if event.type == pg.KEYDOWN and event.key == pg.K_g:
+                return "clear"
+        
+        if pg.mouse.get_pressed()[0]: # マウスの処理
+            mouse_x, mouse_y = pg.mouse.get_pos()
+            if (start.rect.topleft[0] <= mouse_x <= start.rect.bottomright[0]) and (start.rect.topleft[1] <= mouse_y <= start.rect.bottomright[1]):
+                break
 
     while True:
         for event in pg.event.get():
@@ -298,6 +397,7 @@ def main():
         
         screen.blit(bg_img, [0, 0])
 
+        kokaton.vy = +1
         # 何にも衝突がなければobj.vyは+2になる
         for mgm in mgms:
             mgm.vy = +2
@@ -310,32 +410,31 @@ def main():
             mouse_x, mouse_y = pg.mouse.get_pos()
             # マウスがこうかとんに重なっていたら
             if (kokaton.rect.topleft[0] <= mouse_x <= kokaton.rect.bottomright[0]) and (kokaton.rect.topleft[1] <= mouse_y <= kokaton.rect.bottomright[1]):
-                kokaton.vx, kokaton.vy = calc_orientation(kokaton.rect, tre.rect)
+                kokaton.vx = calc_orientation(kokaton.rect, tre.rect)
         
         # こうかとんとステージの当たり判定
         if len(pg.sprite.spritecollide(kokaton, ysts, False)) != 0:
             kokaton.vy = 0
         if len(pg.sprite.spritecollide(kokaton, tsts, False)) != 0:
             kokaton.vx = 0
-            if kokaton.rect.centerx < WIDTH / 2:
-                kokaton.rect.left += 1
-            elif kokaton.rect.centerx > WIDTH / 2:
-                kokaton.rect.right -= 1
+            kokaton.rect.centerx -= 10
         
         # こうかとんとピンの当たり判定
-        if len(pg.sprite.spritecollide(kokaton, pins, False)) != 0:
-            kokaton.vx, kokaton.vy = 0, 0
+        if len(pg.sprite.spritecollide(kokaton, tpins, False)) != 0:
+            kokaton.vx = 0
+        if len(pg.sprite.spritecollide(kokaton, ypins, False)) != 0:
+            kokaton.vy = 0
         
         # こうかとんとマグマと水で出来た石の当たり判定
         if len(pg.sprite.spritecollide(kokaton, sixtones, False)) != 0:
             kokaton.vy = 0
 
         # ピンとobjの当たり判定
-        for mgm in pg.sprite.groupcollide(mgms, pins, False, False).keys():
+        for mgm in pg.sprite.groupcollide(mgms, ypins, False, False).keys():
             mgm.vy = 0
-        for wtr in pg.sprite.groupcollide(wtrs, pins, False, False).keys():
+        for wtr in pg.sprite.groupcollide(wtrs, ypins, False, False).keys():
             wtr.vy = 0
-        for tre in pg.sprite.groupcollide(trs, pins, False, False).keys():
+        for tre in pg.sprite.groupcollide(trs, ypins, False, False).keys():
             tre.vy = 0
         
         # 床とobjの当たり判定
@@ -346,20 +445,17 @@ def main():
         for tre in pg.sprite.groupcollide(trs, ysts, False, False).keys():
             tre.vy = 0
         
-        # 水とマグマの当たり判定
+        # 水とマグマの当たり判定 ... ステージごとに下においてある方を基準とする
         for wtr in pg.sprite.groupcollide(wtrs, mgms, True, True).keys():
             sixtones.add(Stone(wtr))
         
-        # マグマと宝物の当たり判定
-        for mgm in pg.sprite.groupcollide(mgms, trs, False, True).keys():
-            pass
-
         # 宝とマグマと水で出来た石の当たり判定
         for tre in pg.sprite.groupcollide(trs, sixtones, False, False).keys():
             tre.vy = 0
         
-        # こうかとんとマグマの当たり判定，ゲームオーバー
-        if len(pg.sprite.spritecollide(kokaton, mgms, False)) != 0:
+        # マグマと宝物の当たり判定
+        if len(pg.sprite.groupcollide(mgms, trs, False, True).values()) != 0:
+            game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
             sixtones.draw(screen)
@@ -367,22 +463,38 @@ def main():
             tsts.draw(screen)
             pg.display.update()
             time.sleep(2)
-            return "gameover"
+        
+        # こうかとんとマグマの当たり判定，ゲームオーバー
+        if len(pg.sprite.spritecollide(kokaton, mgms, False)) != 0:
+            game_stats = "gameover"
+            kokaton.update(screen)
+            kao.update(kokaton, screen)
+            sixtones.draw(screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
+            pg.display.update()
+            time.sleep(2)
         
         # こうかとんと宝の当たり判定，クリアー！！
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
-            kokaton.update(screen)
-            kao.update(kokaton, screen)
-            sixtones.draw(screen)
-            ysts.draw(screen)
-            tsts.draw(screen)
-            pg.display.update()
-            time.sleep(2)
-            return "clear"
+            if len(trs) == 0:
+                game_stats = "clear"
+                sixtones.draw(screen)
+                kokaton.update(screen)
+                kao.update(kokaton, screen)
+                ysts.draw(screen)
+                tsts.draw(screen)
+                pg.display.update()
+                time.sleep(2)
+
+        if game_stats != None:
+            break
 
         kokaton.update(screen)
-        pins.update()
-        pins.draw(screen)
+        ypins.update()
+        ypins.draw(screen)
+        tpins.update()
+        tpins.draw(screen)
         mgms.update()
         mgms.draw(screen)
         wtrs.update()
@@ -395,12 +507,43 @@ def main():
         tsts.draw(screen)
         pg.display.update()
         clock.tick(60)
+    
+    while True:
+        if game_stats == "gameover":
+            go.update(screen)
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    return "retire"
+            if pg.mouse.get_pressed()[0]: # マウスの処理
+                mouse_x, mouse_y = pg.mouse.get_pos()
+                if (go.con_rect.topleft[0] <= mouse_x <= go.con_rect.bottomright[0]) and (go.con_rect.topleft[1] <= mouse_y <= go.con_rect.bottomright[1]):
+                    return "continue"
+                elif (go.ret_rect.topleft[0] <= mouse_x <= go.ret_rect.bottomright[0]) and (go.ret_rect.topleft[1] <= mouse_y <= go.ret_rect.bottomright[1]):
+                    return "retire"
+        elif game_stats == "clear":
+            cl.update(screen)
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    return "retire"
+            if pg.mouse.get_pressed()[0]: # マウスの処理
+                mouse_x, mouse_y = pg.mouse.get_pos()
+                if (cl.next_rect.topleft[0] <= mouse_x <= cl.next_rect.bottomright[0]) and (cl.next_rect.topleft[1] <= mouse_y <= cl.next_rect.bottomright[1]):
+                    return "clear"
+                elif (cl.con_rect.topleft[0] <= mouse_x <= cl.con_rect.bottomright[0]) and (cl.con_rect.topleft[1] <= mouse_y <= cl.con_rect.bottomright[1]):
+                    return "continue"
 
 
-def main2():
+def main2(stage_num):
+    game_stats = None
     pg.display.set_caption("広告ゲーム2")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
-    bg_img = pg.image.load(f"fig/sizen.jpg")
+    bg_img = pg.image.load(f"fig/bg_img{stage_num}.jpg")
+
+    start = Start(stage_num)
+    go = Gameover()
+    cl = Clear()
 
     kao = Kao()
     ysts = pg.sprite.Group()
@@ -409,38 +552,61 @@ def main2():
     wtrs = pg.sprite.Group()
     trs = pg.sprite.Group()
     sixtones = pg.sprite.Group()
-    pins = pg.sprite.Group()
+    ypins = pg.sprite.Group()
+    tpins = pg.sprite.Group()
 
     clock = pg.time.Clock()
 
-    #ここはステージ毎に数値を変更することができる
-    kokaton = Kokaton(100, 800)
-    # ステージの座標をfor文で指定する
+    # 基本ステージの描写(周りの壁)
     for x in range(7):
         ysts.add(Yoko_Stage((100 * x, 0)))
         ysts.add(Yoko_Stage((100 * x -50, 25)))
         ysts.add(Yoko_Stage((100 * x, 875)))
         ysts.add(Yoko_Stage((100 * x -50, 850)))
-        if x < 3:
-            ysts.add(Yoko_Stage((100 * x, 800)))
-            ysts.add(Yoko_Stage((100 * x, 825)))
     for y in range(10):
         tsts.add(Tate_Stage((0, 100 * y)))
         tsts.add(Tate_Stage((25, 100 * y -50)))
         tsts.add(Tate_Stage((575, 100 * y)))
         tsts.add(Tate_Stage((550, 100 * y -50)))
 
-    #ステージによって変えれる
-    mgms.add(Obj(0, (425, 260)))
-    wtrs.add(Obj(2, (425, 820)))
-    trs.add(Obj(1, (425, 135)))
+    #ここはステージ毎に数値を変更することができる
+    kokaton = Kokaton(175, 550)
+    # 追加ステージの座標をfor文で指定する
+    for i in range(6):
+        tsts.add(Tate_Stage((290, 100 * i)))
+    for y in range(22):
+        for x in range(3):
+            if y % 2 == 0:
+                ysts.add(Yoko_Stage((300 + 100 * x , 50 + 25 * y)))
+            if y % 2 == 1:
+                ysts.add(Yoko_Stage((300, 50 + 25 * y)))
+                ysts.add(Yoko_Stage((500 - 100 * x + 50, 50 + 25 * y))) # マイナスから回すことでステージの形を整える
 
-    game_stats = None
+    #ステージによって変えれる
+    for x in range(11):
+        mgms.add(Obj(0, (75 + 20 * x, 800)))
+        wtrs.add(Obj(2, (75  + 20 * x, 250)))
+        trs.add(Obj(1, (325  + 20 * x, 800)))
 
     # 使いたい棒の座標タプルが入ったリストを指定する
-    pins.add(Yoko_Pin(2))
-    pins.add(Yoko_Pin(3))
-    pins.add(Tate_Pin(0))
+    ypins.add(Yoko_Pin(1))
+    ypins.add(Yoko_Pin(2))
+    tpins.add(Tate_Pin(1))
+
+    while True:
+        start.update(screen)
+        pg.display.update()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return "retire"
+            # 一ステージとばすチート
+            if event.type == pg.KEYDOWN and event.key == pg.K_g:
+                return "clear"
+        
+        if pg.mouse.get_pressed()[0]: # マウスの処理
+            mouse_x, mouse_y = pg.mouse.get_pos()
+            if (start.rect.topleft[0] <= mouse_x <= start.rect.bottomright[0]) and (start.rect.topleft[1] <= mouse_y <= start.rect.bottomright[1]):
+                break
 
     while True:
         for event in pg.event.get():
@@ -449,6 +615,7 @@ def main2():
         
         screen.blit(bg_img, [0, 0])
 
+        kokaton.vy = +1
         # 何にも衝突がなければobj.vyは+2になる
         for mgm in mgms:
             mgm.vy = +2
@@ -461,32 +628,30 @@ def main2():
             mouse_x, mouse_y = pg.mouse.get_pos()
             # マウスがこうかとんに重なっていたら
             if (kokaton.rect.topleft[0] <= mouse_x <= kokaton.rect.bottomright[0]) and (kokaton.rect.topleft[1] <= mouse_y <= kokaton.rect.bottomright[1]):
-                kokaton.vx, kokaton.vy = calc_orientation(kokaton.rect, tre.rect)
+                kokaton.vx = calc_orientation(kokaton.rect, tre.rect)
         
         # こうかとんとステージの当たり判定
         if len(pg.sprite.spritecollide(kokaton, ysts, False)) != 0:
             kokaton.vy = 0
         if len(pg.sprite.spritecollide(kokaton, tsts, False)) != 0:
             kokaton.vx = 0
-            if kokaton.rect.centerx < WIDTH / 2:
-                kokaton.rect.left += 1
-            elif kokaton.rect.centerx > WIDTH / 2:
-                kokaton.rect.right -= 1
         
         # こうかとんとピンの当たり判定
-        if len(pg.sprite.spritecollide(kokaton, pins, False)) != 0:
-            kokaton.vx, kokaton.vy = 0, 0
+        if len(pg.sprite.spritecollide(kokaton, tpins, False)) != 0:
+            kokaton.vx = 0
+        if len(pg.sprite.spritecollide(kokaton, ypins, False)) != 0:
+            kokaton.vy = 0
         
         # こうかとんとマグマと水で出来た石の当たり判定
         if len(pg.sprite.spritecollide(kokaton, sixtones, False)) != 0:
             kokaton.vy = 0
 
         # ピンとobjの当たり判定
-        for mgm in pg.sprite.groupcollide(mgms, pins, False, False).keys():
+        for mgm in pg.sprite.groupcollide(mgms, ypins, False, False).keys():
             mgm.vy = 0
-        for wtr in pg.sprite.groupcollide(wtrs, pins, False, False).keys():
+        for wtr in pg.sprite.groupcollide(wtrs, ypins, False, False).keys():
             wtr.vy = 0
-        for tre in pg.sprite.groupcollide(trs, pins, False, False).keys():
+        for tre in pg.sprite.groupcollide(trs, ypins, False, False).keys():
             tre.vy = 0
         
         # 床とobjの当たり判定
@@ -497,20 +662,17 @@ def main2():
         for tre in pg.sprite.groupcollide(trs, ysts, False, False).keys():
             tre.vy = 0
         
-        # 水とマグマの当たり判定
-        for wtr in pg.sprite.groupcollide(wtrs, mgms, True, True).keys():
-            sixtones.add(Stone(wtr))
+        # 水とマグマの当たり判定 ... ステージごとに下においてある方を基準とする
+        for mgm in pg.sprite.groupcollide(mgms, wtrs, True, True).keys():
+            sixtones.add(Stone(mgm))
         
-        # マグマと宝物の当たり判定
-        for mgm in pg.sprite.groupcollide(mgms, trs, False, True).keys():
-            pass
-
         # 宝とマグマと水で出来た石の当たり判定
         for tre in pg.sprite.groupcollide(trs, sixtones, False, False).keys():
             tre.vy = 0
         
-        # こうかとんとマグマの当たり判定，ゲームオーバー
-        if len(pg.sprite.spritecollide(kokaton, mgms, False)) != 0:
+        # マグマと宝物の当たり判定
+        if len(pg.sprite.groupcollide(mgms, trs, False, True).values()) != 0:
+            game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
             sixtones.draw(screen)
@@ -518,22 +680,38 @@ def main2():
             tsts.draw(screen)
             pg.display.update()
             time.sleep(2)
-            return "gameover"
+        
+        # こうかとんとマグマの当たり判定，ゲームオーバー
+        if len(pg.sprite.spritecollide(kokaton, mgms, False)) != 0:
+            game_stats = "gameover"
+            kokaton.update(screen)
+            kao.update(kokaton, screen)
+            sixtones.draw(screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
+            pg.display.update()
+            time.sleep(2)
         
         # こうかとんと宝の当たり判定，クリアー！！
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
-            kokaton.update(screen)
-            kao.update(kokaton, screen)
-            sixtones.draw(screen)
-            ysts.draw(screen)
-            tsts.draw(screen)
-            pg.display.update()
-            time.sleep(2)
-            return "clear"
+            if len(trs) == 0:
+                game_stats = "clear"
+                sixtones.draw(screen)
+                kokaton.update(screen)
+                kao.update(kokaton, screen)
+                ysts.draw(screen)
+                tsts.draw(screen)
+                pg.display.update()
+                time.sleep(2)
+
+        if game_stats != None:
+            break
 
         kokaton.update(screen)
-        pins.update()
-        pins.draw(screen)
+        ypins.update()
+        ypins.draw(screen)
+        tpins.update()
+        tpins.draw(screen)
         mgms.update()
         mgms.draw(screen)
         wtrs.update()
@@ -546,22 +724,60 @@ def main2():
         tsts.draw(screen)
         pg.display.update()
         clock.tick(60)
+    
+    while True:
+        if game_stats == "gameover":
+            go.update(screen)
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    return "retire"
+            if pg.mouse.get_pressed()[0]: # マウスの処理
+                mouse_x, mouse_y = pg.mouse.get_pos()
+                if (go.con_rect.topleft[0] <= mouse_x <= go.con_rect.bottomright[0]) and (go.con_rect.topleft[1] <= mouse_y <= go.con_rect.bottomright[1]):
+                    return "continue"
+                elif (go.ret_rect.topleft[0] <= mouse_x <= go.ret_rect.bottomright[0]) and (go.ret_rect.topleft[1] <= mouse_y <= go.ret_rect.bottomright[1]):
+                    return "retire"
+        elif game_stats == "clear":
+            cl.update(screen)
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    return "retire"
+            if pg.mouse.get_pressed()[0]: # マウスの処理
+                mouse_x, mouse_y = pg.mouse.get_pos()
+                if (cl.next_rect.topleft[0] <= mouse_x <= cl.next_rect.bottomright[0]) and (cl.next_rect.topleft[1] <= mouse_y <= cl.next_rect.bottomright[1]):
+                    return "clear"
+                elif (cl.con_rect.topleft[0] <= mouse_x <= cl.con_rect.bottomright[0]) and (cl.con_rect.topleft[1] <= mouse_y <= cl.con_rect.bottomright[1]):
+                    return "continue"
+
 
 
 if __name__ == "__main__":
     pg.init()
-    game_stats = None
     # ステージの変化とゲームオーバーなどの処理
     while True:
-        game_stats = main() # main関数内でreturnしてくる文字列を変数に格納する
+        game_stats = None
+        game_stats = main(STAGE_NUM) # main関数内でreturnしてくる文字列を変数に格納する
         if game_stats == "clear":
             STAGE_NUM += 1
-            game_stats = main2()
             break
-        elif game_stats == "gameover":
-            print("continue")
+        elif game_stats == "continue":
             continue
         elif game_stats == "retire":
+            pg.quit()
+            sys.exit()
+    
+    while True:
+        game_stats = None
+        game_stats = main2(STAGE_NUM)
+        if game_stats == "clear":
+            STAGE_NUM += 1
             break
+        elif game_stats == "continue":
+            continue
+        elif game_stats == "retire":
+            pg.quit()
+            sys.exit()
     pg.quit()
     sys.exit()
