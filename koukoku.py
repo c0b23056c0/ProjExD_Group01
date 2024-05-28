@@ -752,7 +752,6 @@ def main2(stage_num):
                     return "continue"
 
 
-
 if __name__ == "__main__":
     pg.init()
     # ステージの変化とゲームオーバーなどの処理
