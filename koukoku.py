@@ -22,7 +22,6 @@ class Rakka:
 
     def update(self, screen):
         # self.y += self.speed_y
-        print(self.rct.centery)
         if self.rct.centery >= 850:
             self.rct.centery = self.rct.centery
             self.speed_y = 0
