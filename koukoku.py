@@ -307,10 +307,14 @@ class Start:
 class Gameover:
     def __init__(self):
         #ゲームオーバーの文字列
-        self.go = pg.font.Font(None, 100)
-        self.go_image = self.go.render(f"GAME OVER", 0, (255, 0, 0), (255, 255, 255))
-        self.go_rect = self.go_image.get_rect()
-        self.go_rect.center = 300, 200
+        self.image = pg.image.load("fig/game.png") # ゲームオーバー画像
+        self.image_rect = self.image.get_rect()
+        self.image_rect.center = 300, 200
+        #
+        # self.go = pg.font.Font(None, 100)
+        # self.go_image = self.go.render(f"GAME OVER", 0, (255, 0, 0), (255, 255, 255))
+        # self.go_rect = self.go_image.get_rect()
+        # self.go_rect.center = 300, 200
         #コンチヌー
         self.con = pg.font.Font(None, 50)
         self.con_image = self.con.render(f"CONTINUE ???", 1, (255, 255, 255), (255, 0, 0))
@@ -323,9 +327,10 @@ class Gameover:
         self.ret_rect.center = 300, 650
     
     def update(self, screen: pg.Surface):
-        screen.blit(self.go_image, self.go_rect)
+        # screen.blit(self.go_image, self.go_rect)
         screen.blit(self.con_image, self.con_rect)
         screen.blit(self.ret_image, self.ret_rect)
+        screen.blit(self.image, self.image_rect) 
 
 
 class Clear:
@@ -377,6 +382,7 @@ def main(stage_num):
     game_stats = None
     pg.display.set_caption("広告ゲーム")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
+
     bg_img = pg.image.load(f"fig/bg_img{stage_num}.jpg")
 
     start = Start()
