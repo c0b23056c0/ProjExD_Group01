@@ -35,7 +35,7 @@ def calc_orientation(org: pg.Rect, dst: pg.Rect) -> tuple[float, float]:
     """
     x_diff, y_diff = dst.centerx-org.centerx, dst.centery-org.centery
     norm = math.sqrt(x_diff**2+y_diff**2)
-    return x_diff/norm
+    return x_diff/norm, y_diff/norm
 
 
 class Yoko_Stage(pg.sprite.Sprite):
@@ -277,6 +277,19 @@ class Stone(pg.sprite.Sprite):
         self.rect.move_ip(self.vx * self.speed, self.vy * self.speed)
 
 
+class BlackHole(pg.sprite.Sprite):
+    def __init__(self, xy: tuple[int, int]):
+        super().__init__()
+        self.image = pg.image.load("fig/blackhole.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = xy
+        self.vx, self.vy = 0, 0
+    
+    def update(self, screen: pg.Surface):
+        self.rect.move_ip(self.vx, self.vy)
+        screen.blit(self.image, self.rect)
+
+
 class Start:
     def __init__(self, stage_num):
         self.fonto = pg.font.Font(None, 120)
@@ -384,7 +397,7 @@ class Clear:
 
 def main(stage_num):
     game_stats = None
-    pg.display.set_caption("広告ゲーム")
+    pg.display.set_caption(f"広告ゲーム{stage_num}")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load(f"fig/bg_img{stage_num}.jpg")
 
@@ -477,7 +490,7 @@ def main(stage_num):
             mouse_x, mouse_y = pg.mouse.get_pos()
             # マウスがこうかとんに重なっていたら
             if (kokaton.rect.topleft[0] <= mouse_x <= kokaton.rect.bottomright[0]) and (kokaton.rect.topleft[1] <= mouse_y <= kokaton.rect.bottomright[1]):
-                kokaton.vx = calc_orientation(kokaton.rect, tre.rect)
+                kokaton.vx, emp = calc_orientation(kokaton.rect, tre.rect)
         
         # こうかとんとステージの当たり判定
         if len(pg.sprite.spritecollide(kokaton, ysts, False)) != 0:
@@ -648,7 +661,7 @@ def main(stage_num):
 
 def main2(stage_num):
     game_stats = None
-    pg.display.set_caption("広告ゲーム2")
+    pg.display.set_caption(f"広告ゲーム{stage_num}")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load(f"fig/bg_img{stage_num}.jpg")
 
@@ -738,7 +751,7 @@ def main2(stage_num):
             mouse_x, mouse_y = pg.mouse.get_pos()
             # マウスがこうかとんに重なっていたら
             if (kokaton.rect.topleft[0] <= mouse_x <= kokaton.rect.bottomright[0]) and (kokaton.rect.topleft[1] <= mouse_y <= kokaton.rect.bottomright[1]):
-                kokaton.vx = calc_orientation(kokaton.rect, tre.rect)
+                kokaton.vx, emp = calc_orientation(kokaton.rect, tre.rect)
         
         # こうかとんとステージの当たり判定
         if len(pg.sprite.spritecollide(kokaton, ysts, False)) != 0:
@@ -909,7 +922,7 @@ def main2(stage_num):
 
 def main3(stage_num):
     game_stats = None
-    pg.display.set_caption("広告ゲーム3")
+    pg.display.set_caption(f"広告ゲーム{stage_num + 1}")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load(f"fig/bg_img{stage_num}.jpg")
 
@@ -1006,7 +1019,7 @@ def main3(stage_num):
             mouse_x, mouse_y = pg.mouse.get_pos()
             # マウスがこうかとんに重なっていたら
             if (kokaton.rect.topleft[0] <= mouse_x <= kokaton.rect.bottomright[0]) and (kokaton.rect.topleft[1] <= mouse_y <= kokaton.rect.bottomright[1]):
-                kokaton.vx = calc_orientation(kokaton.rect, tre.rect)
+                kokaton.vx, emp = calc_orientation(kokaton.rect, tre.rect)
         
         # こうかとんとステージの当たり判定
         if len(pg.sprite.spritecollide(kokaton, ysts, False)) != 0:
@@ -1200,6 +1213,321 @@ def main3(stage_num):
                     return "continue"
 
 
+def main4(stage_num):
+    game_stats = None
+    pg.display.set_caption(f"広告ゲーム{stage_num + 1}")
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
+    bg_img = pg.image.load(f"fig/bg_img{stage_num}.jpg")
+
+    start = Start(stage_num)
+    go = Gameover()
+    cl = Clear()
+
+    kao = Kao()
+    ysts = pg.sprite.Group()
+    tsts = pg.sprite.Group()
+    asis = pg.sprite.Group()
+    mgms = pg.sprite.Group()
+    wtrs = pg.sprite.Group()
+    trs = pg.sprite.Group()
+    sixtones = pg.sprite.Group()
+    ypins = pg.sprite.Group()
+    tpins = pg.sprite.Group()
+    ytks = pg.sprite.Group()
+
+    clock = pg.time.Clock()
+
+    # 基本ステージの描写(周りの壁)
+    for x in range(7):
+        ysts.add(Yoko_Stage((100 * x, 0)))
+        ysts.add(Yoko_Stage((100 * x -50, 25)))
+        ysts.add(Yoko_Stage((100 * x, 875)))
+        ysts.add(Yoko_Stage((100 * x -50, 850)))
+    for y in range(10):
+        tsts.add(Tate_Stage((0, 100 * y)))
+        tsts.add(Tate_Stage((25, 100 * y -50)))
+        tsts.add(Tate_Stage((575, 100 * y)))
+        tsts.add(Tate_Stage((550, 100 * y -50)))
+
+    #ここはステージ毎に数値を変更することができる
+    kokaton = Kokaton(300, 150)
+
+    #ステージによって変えれる
+    for i in range(24):
+        mgms.add(Obj(0, (70 + 20 * i, 400)))
+        wtrs.add(Obj(2, (70  + 20 * i, 200)))
+        trs.add(Obj(1, (70  + 20 * i, 800)))
+    
+    # ブラックホール
+    blackhole = BlackHole((300, 600))
+
+    # 使いたい棒の座標タプルが入ったリストを指定する
+    ypins.add(Yoko_Pin((50, 240)))
+    ypins.add(Yoko_Pin((300, 240)))
+    ypins.add(Yoko_Pin((50, 430)))
+    ypins.add(Yoko_Pin((300, 430)))
+
+    # 使いたい竹の座標をタプルで指定する
+    ytks.add(Yoko_Take((50, 700)))
+    ytks.add(Yoko_Take((300, 700)))
+
+    while True:
+        start.update(screen)
+        pg.display.update()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return "retire"
+            # 一ステージとばすチート
+            if event.type == pg.KEYDOWN and event.key == pg.K_g:
+                return "clear"
+        
+        if pg.mouse.get_pressed()[0]: # マウスの処理
+            mouse_x, mouse_y = pg.mouse.get_pos()
+            if (start.rect.topleft[0] <= mouse_x <= start.rect.bottomright[0]) and (start.rect.topleft[1] <= mouse_y <= start.rect.bottomright[1]):
+                break
+
+    while True:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return "retire"
+            if event.type == pg.KEYDOWN and event.key == pg.K_r:
+                return "continue"
+        
+        screen.blit(bg_img, [0, 0])
+
+        kokaton.vy = +1
+        # objはブラックホールに吸い込まれる
+        for mgm in mgms:
+            try:
+                mgm.vx, mgm.vy = calc_orientation(mgm.rect, blackhole.rect)
+            except ZeroDivisionError:
+                pass
+        for wtr in wtrs:
+            try:
+                wtr.vx, wtr.vy = calc_orientation(wtr.rect, blackhole.rect)
+            except ZeroDivisionError:
+                pass
+        for tre in trs:
+            try:
+                tre.vx, tre.vy = calc_orientation(tre.rect, blackhole.rect)
+            except ZeroDivisionError:
+                game_stats = "gameover"
+        for stone in sixtones:
+            stone.vy = +2
+            stone.vx = 0
+        
+        if pg.mouse.get_pressed()[0]: # マウスの処理
+            mouse_x, mouse_y = pg.mouse.get_pos()
+            # マウスがこうかとんに重なっていたら
+            if (kokaton.rect.topleft[0] <= mouse_x <= kokaton.rect.bottomright[0]) and (kokaton.rect.topleft[1] <= mouse_y <= kokaton.rect.bottomright[1]):
+                kokaton.vx, emp = calc_orientation(kokaton.rect, tre.rect)
+            # ブラックホールの移動処理
+            if (blackhole.rect.topleft[0] <= mouse_x <= blackhole.rect.bottomright[0]) and (blackhole.rect.topleft[1] <= mouse_y <= blackhole.rect.bottomright[1]):
+                if (50 <= mouse_x <= 550) and (50 <= mouse_y <= 850):
+                    blackhole.rect.center = (mouse_x, mouse_y)
+        
+        # こうかとんとステージの当たり判定
+        if len(pg.sprite.spritecollide(kokaton, ysts, False)) != 0:
+            kokaton.vy = 0
+        for tst in pg.sprite.spritecollide(kokaton, tsts, False):
+            if tst.rect.left <= kokaton.rect.right <= tst.rect.right:
+                kokaton.vx = 0
+                kokaton.rect.right -= 10
+            elif tst.rect.left <= kokaton.rect.left <= tst.rect.right:
+                kokaton.vx = 0
+                kokaton.rect.centerx += 10
+        
+        # こうかとんと足場の当たり判定
+        for asi in pg.sprite.spritecollide(kokaton, asis, False):
+            kokaton.vy = 0
+            if asi.rect.top +5 < kokaton.rect.bottom and asi.rect.bottom > kokaton.rect.top:
+                if asi.rect.left <= kokaton.rect.right <= asi.rect.right:
+                    kokaton.vx = 0
+                    kokaton.rect.right -= 10
+                elif asi.rect.left <= kokaton.rect.left <= asi.rect.right:
+                    kokaton.vx = 0
+                    kokaton.rect.centerx += 10
+        
+        # こうかとんとピンの当たり判定
+        if len(pg.sprite.spritecollide(kokaton, tpins, False)) != 0:
+            kokaton.vx = 0
+        if len(pg.sprite.spritecollide(kokaton, ypins, False)) != 0:
+            kokaton.vy = 0
+        
+        #こうかとんと竹の当たり判定
+        if len(pg.sprite.spritecollide(kokaton, ytks, False)) != 0:
+            kokaton.vy = 0
+        
+        # こうかとんとマグマと水で出来た石の当たり判定
+        for stone in pg.sprite.spritecollide(kokaton, sixtones, False):
+            kokaton.vy = 0
+            if kokaton.rect.bottom > stone.rect.top +5:
+                if kokaton.rect.centerx <= stone.rect.centerx:
+                    stone.vx = +2
+                elif kokaton.rect.centerx >= stone.rect.centerx:
+                    stone.vx = -2
+                else:
+                    stone.vx = +2
+
+        # ピンとobjの当たり判定
+        for mgm in pg.sprite.groupcollide(mgms, ypins, False, False).keys():
+            mgm.vy = 0
+        for wtr in pg.sprite.groupcollide(wtrs, ypins, False, False).keys():
+            wtr.vy = 0
+        for tre in pg.sprite.groupcollide(trs, ypins, False, False).keys():
+            tre.vy = 0
+        
+        # 竹とobjの当たり判定
+        for mgm in pg.sprite.groupcollide(mgms, ytks, False, True).keys():
+            pass
+        for wtr in pg.sprite.groupcollide(wtrs, ytks, False, False).keys():
+            wtr.vy = 0
+        for tre in pg.sprite.groupcollide(trs, ytks, False, False).keys():
+            tre.vy = 0
+        
+        # 床とobjの当たり判定
+        for mgm in pg.sprite.groupcollide(mgms, ysts, False, False).keys():
+            mgm.vy = 0
+        for wtr in pg.sprite.groupcollide(wtrs, ysts, False, False).keys():
+            wtr.vy = 0
+        for tre in pg.sprite.groupcollide(trs, ysts, False, False).keys():
+            tre.vy = 0
+        
+        # 足場とobjの当たり判定
+        for mgm in pg.sprite.groupcollide(mgms, asis, False, False).keys():
+            mgm.vy = 0
+        for wtr in pg.sprite.groupcollide(wtrs, asis, False, False).keys():
+            wtr.vy = 0
+        for tre in pg.sprite.groupcollide(trs, asis, False, False).keys():
+            tre.vy = 0
+        
+        # ブラックホールとobjの当たり判定
+        if len(pg.sprite.spritecollide(blackhole, mgms, True)) != 0:
+            pass
+        if len(pg.sprite.spritecollide(blackhole, wtrs, True)) != 0:
+            pass
+        if len(pg.sprite.spritecollide(blackhole, trs, True)) != 0:
+            game_stats = "gameover"
+        
+        # 水とマグマの当たり判定 ... ステージごとに下においてある方を基準とする
+        for mgm in pg.sprite.groupcollide(mgms, wtrs, True, True).keys():
+            sixtones.add(Stone(mgm))
+        
+        # 宝とマグマと水で出来た石の当たり判定
+        for tre in pg.sprite.groupcollide(trs, sixtones, False, False).keys():
+            tre.vy = 0
+        
+        # ピンと石の当たり判定
+        for stone in pg.sprite.groupcollide(sixtones, ypins, False, False).keys():
+            stone.vy = 0
+        
+        # 石と足場の当たり判定
+        for stone in pg.sprite.groupcollide(sixtones, asis, False, False).keys():
+            stone.vy = 0
+
+        # 石と竹の当たり判定
+        if len(pg.sprite.groupcollide(sixtones, ytks, False, True)) != 0:
+            pass
+
+        # 石と床の当たり判定
+        for stone in pg.sprite.groupcollide(sixtones, ysts, False, False).keys():
+            stone.vy = 0
+
+        # 縦のピンと横のピンの当たり判定 -> 縦ピンのy座標移動量を0にする
+        for tpin in pg.sprite.groupcollide(tpins, ypins, False, False).keys():
+            tpin.vy = 0
+        
+        # 横のピンと縦のピンの当たり判定 -> 横ピンのx座標移動量を0にする
+        for ypin in pg.sprite.groupcollide(ypins, tpins, False, False).keys():
+            ypin.vx = 0
+        
+
+        
+        # マグマと宝物の当たり判定
+        if len(pg.sprite.groupcollide(mgms, trs, False, True).values()) != 0:
+            game_stats = "gameover"
+            kokaton.update(screen)
+            kao.update(kokaton, screen)
+            sixtones.draw(screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
+            pg.display.update()
+            time.sleep(2)
+        
+        # こうかとんとマグマの当たり判定，ゲームオーバー
+        if len(pg.sprite.spritecollide(kokaton, mgms, False)) != 0:
+            game_stats = "gameover"
+            kokaton.update(screen)
+            kao.update(kokaton, screen)
+            sixtones.draw(screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
+            pg.display.update()
+            time.sleep(2)
+        
+        # こうかとんと宝の当たり判定，クリアー！！
+        if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
+            if len(trs) == 0:
+                game_stats = "clear"
+                sixtones.draw(screen)
+                kokaton.update(screen)
+                kao.update(kokaton, screen)
+                ysts.draw(screen)
+                tsts.draw(screen)
+                pg.display.update()
+                time.sleep(2)
+
+        if game_stats != None:
+            break
+
+        kokaton.update(screen)
+        ypins.update()
+        ypins.draw(screen)
+        tpins.update()
+        tpins.draw(screen)
+        mgms.update()
+        mgms.draw(screen)
+        wtrs.update()
+        wtrs.draw(screen)
+        trs.update()
+        trs.draw(screen)
+        sixtones.update()
+        sixtones.draw(screen)
+        asis.draw(screen)
+        ytks.draw(screen)
+        blackhole.update(screen)
+        ysts.draw(screen)
+        tsts.draw(screen)
+        pg.display.update()
+        clock.tick(60)
+    
+    while True:
+        if game_stats == "gameover":
+            go.update(screen)
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    return "retire"
+            if pg.mouse.get_pressed()[0]: # マウスの処理
+                mouse_x, mouse_y = pg.mouse.get_pos()
+                if (go.con_rect.topleft[0] <= mouse_x <= go.con_rect.bottomright[0]) and (go.con_rect.topleft[1] <= mouse_y <= go.con_rect.bottomright[1]):
+                    return "continue"
+                elif (go.ret_rect.topleft[0] <= mouse_x <= go.ret_rect.bottomright[0]) and (go.ret_rect.topleft[1] <= mouse_y <= go.ret_rect.bottomright[1]):
+                    return "retire"
+        
+        elif game_stats == "clear":
+            cl.update(screen)
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    return "retire"
+            if pg.mouse.get_pressed()[0]: # マウスの処理
+                mouse_x, mouse_y = pg.mouse.get_pos()
+                if (cl.next_rect.topleft[0] <= mouse_x <= cl.next_rect.bottomright[0]) and (cl.next_rect.topleft[1] <= mouse_y <= cl.next_rect.bottomright[1]):
+                    return "clear"
+                elif (cl.con_rect.topleft[0] <= mouse_x <= cl.con_rect.bottomright[0]) and (cl.con_rect.topleft[1] <= mouse_y <= cl.con_rect.bottomright[1]):
+                    return "continue"
+
 
 if __name__=="__main__":
     pg.init()
@@ -1227,9 +1555,22 @@ if __name__=="__main__":
         elif GAME_STATS == "retire":
             pg.quit()
             sys.exit()
+    
     while True:
         GAME_STATS = None
         GAME_STATS = main3(STAGE_NUM)
+        if GAME_STATS == "clear":
+            STAGE_NUM += 1
+            break
+        elif GAME_STATS == "continue":
+            continue
+        elif GAME_STATS == "retire":
+            pg.quit()
+            sys.exit()
+    
+    while True:
+        GAME_STATS = None
+        GAME_STATS = main4(STAGE_NUM)
         if GAME_STATS == "clear":
             STAGE_NUM += 1
             break
