@@ -373,11 +373,6 @@ class Gameover:
         self.image = pg.image.load("fig/game.png") # ゲームオーバー画像
         self.image_rect = self.image.get_rect()
         self.image_rect.center = 300, 200
-        #
-        # self.go = pg.font.Font(None, 100)
-        # self.go_image = self.go.render(f"GAME OVER", 0, (255, 0, 0), (255, 255, 255))
-        # self.go_rect = self.go_image.get_rect()
-        # self.go_rect.center = 300, 200
         #コンチヌー
         self.con = pg.font.Font(None, 50)
         self.con_image = self.con.render(f"CONTINUE ???", 1, (255, 255, 255), (255, 0, 0))
@@ -410,10 +405,6 @@ class Clear:
         self.img5 = pg.image.load("fig/ペンギン.png")
         self.img6 = pg.image.load("fig/アボカド.png")
         self.txt_rect.center = 300, 200
-        # self.cl = pg.font.Font(None, 100)
-        # self.cl_image = self.cl.render(f"CLEAR", 0, (255, 0, 0), (255, 255, 255))
-        # self.cl_rect = self.cl_image.get_rect()
-        # self.cl_rect.center = 300, 200
         #コンチヌー
         self.next = pg.font.Font(None, 50)
         self.next_image = self.next.render(f"NEXT STAGE", 1, (255, 255, 255), (255, 0, 0))
@@ -626,7 +617,6 @@ def main(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -637,7 +627,6 @@ def main(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -647,7 +636,6 @@ def main(stage_num):
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
             if len(trs) == 0:
                 game_stats = "clear"
-                sixtones.draw(screen)
                 kokaton.update(screen)
                 kao.update(kokaton, screen)
                 ysts.draw(screen)
@@ -887,7 +875,6 @@ def main2(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -898,7 +885,6 @@ def main2(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -908,7 +894,6 @@ def main2(stage_num):
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
             if len(trs) == 0:
                 game_stats = "clear"
-                sixtones.draw(screen)
                 kokaton.update(screen)
                 kao.update(kokaton, screen)
                 ysts.draw(screen)
@@ -1179,7 +1164,6 @@ def main3(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -1190,7 +1174,6 @@ def main3(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -1200,7 +1183,6 @@ def main3(stage_num):
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
             if len(trs) == 0:
                 game_stats = "clear"
-                sixtones.draw(screen)
                 kokaton.update(screen)
                 kao.update(kokaton, screen)
                 ysts.draw(screen)
@@ -1358,6 +1340,13 @@ def main4(stage_num):
                 tre.vx, tre.vy = calc_orientation(tre.rect, blackhole.rect)
             except ZeroDivisionError:
                 game_stats = "gameover"
+                kokaton.update(screen)
+                kao.update(kokaton, screen)
+                ysts.draw(screen)
+                tsts.draw(screen)
+                pg.display.update()
+                time.sleep(2)
+        
         for stone in sixtones:
             stone.vy = +2
             stone.vx = 0
@@ -1418,6 +1407,12 @@ def main4(stage_num):
         # こうかとんとブラックホールの当たり判定
         if kokaton.rect.colliderect(blackhole.rect):
             game_stats = "gameover"
+            kokaton.update(screen)
+            kao.update(kokaton, screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
+            pg.display.update()
+            time.sleep(2)
 
         # ピンとobjの当たり判定
         for mgm in pg.sprite.groupcollide(mgms, ypins, False, False).keys():
@@ -1458,6 +1453,12 @@ def main4(stage_num):
             pass
         if len(pg.sprite.spritecollide(blackhole, trs, True)) != 0:
             game_stats = "gameover"
+            kokaton.update(screen)
+            kao.update(kokaton, screen)
+            ysts.draw(screen)
+            tsts.draw(screen)
+            pg.display.update()
+            time.sleep(2)
         
         # 水とマグマの当たり判定 ... ステージごとに下においてある方を基準とする
         for mgm in pg.sprite.groupcollide(mgms, wtrs, True, True).keys():
@@ -1498,7 +1499,6 @@ def main4(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -1509,7 +1509,6 @@ def main4(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -1519,7 +1518,6 @@ def main4(stage_num):
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
             if len(trs) == 0:
                 game_stats = "clear"
-                sixtones.draw(screen)
                 kokaton.update(screen)
                 kao.update(kokaton, screen)
                 ysts.draw(screen)
@@ -1854,7 +1852,6 @@ def main5(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -1865,7 +1862,6 @@ def main5(stage_num):
             game_stats = "gameover"
             kokaton.update(screen)
             kao.update(kokaton, screen)
-            sixtones.draw(screen)
             ysts.draw(screen)
             tsts.draw(screen)
             pg.display.update()
@@ -1875,7 +1871,6 @@ def main5(stage_num):
         if len(pg.sprite.spritecollide(kokaton, trs, True)) != 0:
             if len(trs) == 0:
                 game_stats = "clear"
-                sixtones.draw(screen)
                 kokaton.update(screen)
                 kao.update(kokaton, screen)
                 ysts.draw(screen)
