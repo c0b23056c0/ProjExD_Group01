@@ -1844,8 +1844,8 @@ def main5(stage_num):
         for ypin in pg.sprite.groupcollide(ypins, tpins, False, False).keys():
             ypin.vx = 0
         
-        for stone in pg.sprite.groupcollide(sixtones, tkazes, False, True).keys():
-            pass
+        for tkaze in pg.sprite.groupcollide(tkazes, sixtones, True, False).keys():
+            tkazes.update()
         
         # マグマと宝物の当たり判定
         if len(pg.sprite.groupcollide(mgms, trs, False, True).values()) != 0:
